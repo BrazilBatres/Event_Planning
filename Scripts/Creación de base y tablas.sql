@@ -13,6 +13,7 @@ DROP TABLE IF exists Seller_social_media;
 DROP TABLE IF exists Sellers;
 DROP TABLE IF exists Buyers;
 DROP TABLE IF exists Administrators;
+DROP TABLE IF exists user_roles;
 DROP TABLE IF exists Users;
 DROP TABLE IF exists User_type;
 DROP TABLE IF exists Service_category;
@@ -21,6 +22,9 @@ DROP TABLE IF exists Identification_types;
 DROP TABLE IF exists Cities;
 DROP TABLE IF exists States;
 DROP TABLE IF exists Countries;
+DROP TABLE IF exists role_permissions;
+DROP TABLE IF exists Permissions;
+DROP TABLE IF exists Roles;
 
 CREATE TABLE Identification_types (
   id INT NOT NULL AUTO_INCREMENT,
@@ -66,11 +70,14 @@ CREATE TABLE Users (
   id INT NOT NULL AUTO_INCREMENT,
   first_name VARCHAR(50) NOT NULL,
   last_name VARCHAR(50) NOT NULL,
+  company_name VARCHAR(50) NULL,
   mail_visible TINYINT NOT NULL DEFAULT 0,
-  email VARCHAR(100) NULL,
+  email VARCHAR(100) NOT NULL,
   phone_visible TINYINT NOT NULL DEFAULT 0,
   contact_phone VARCHAR(20) NULL,
+  is_company TINYINT NOT NULL DEFAULT 0,
   password VARCHAR(100) NOT NULL,
+  UNIQUE(email),
   PRIMARY KEY (id)
 );
 
@@ -111,13 +118,33 @@ CREATE TABLE Seller_social_media (
     FOREIGN KEY (seller_id) REFERENCES sellers(id)
 );
 
-CREATE TABLE Administrators (
-id INT NOT NULL AUTO_INCREMENT,
-  user_id INT NOT NULL,
-  start_date DATE NOT NULL,
-  end_date DATE NULL,
-  PRIMARY KEY (id),
-  FOREIGN KEY (user_id) REFERENCES Users(id)
+CREATE TABLE Roles (
+  id INT PRIMARY KEY,
+  role_name VARCHAR(50)
+);
+
+CREATE TABLE Permissions (
+  id INT PRIMARY KEY,
+  permission_name VARCHAR(50)
+);
+
+CREATE TABLE user_roles (
+  id INT PRIMARY KEY,
+  user_id INT,
+  role_id INT,
+  start_date DATE,
+  end_date DATE,
+  FOREIGN KEY (user_id) REFERENCES Users(id),
+  FOREIGN KEY (role_id) REFERENCES Roles(id)
+);
+
+
+CREATE TABLE role_permissions (
+  id INT PRIMARY KEY,
+  role_id INT,
+  permission_id INT,
+  FOREIGN KEY (role_id) REFERENCES Roles(id),
+  FOREIGN KEY (permission_id) REFERENCES Permissions(id)
 );
 
 CREATE TABLE Verification_requests (
@@ -129,33 +156,23 @@ CREATE TABLE Verification_requests (
   status_id INT NOT NULL,
   transac_date DATE NOT NULL,
   FOREIGN KEY (seller_id) REFERENCES Sellers(id),
-  FOREIGN KEY (admin_id) REFERENCES Administrators(id),
+  FOREIGN KEY (admin_id) REFERENCES Users(id),
   FOREIGN KEY (status_id) REFERENCES Verification_status(id)
 );
 
-CREATE TABLE Products (
+CREATE TABLE Catalog_Item (
   id INT NOT NULL AUTO_INCREMENT,
   seller_id INT NOT NULL,
-  product_name VARCHAR(100) NOT NULL,
-  product_description VARCHAR(1000) NOT NULL,
-  product_price DECIMAL(10,2) NOT NULL,
-  product_category_id INT NOT NULL,
+  item_name VARCHAR(100) NOT NULL,
+  item_description VARCHAR(1000) NOT NULL,
+  item_price DECIMAL(10,2) NOT NULL,
+  item_category_id INT NOT NULL,
+  is_service TINYINT NOT NULL DEFAULT 0,
   PRIMARY KEY (id),
-  FOREIGN KEY (seller_id) REFERENCES Sellers(id),
+  FOREIGN KEY (seller_id) REFERENCES Users(id),
   FOREIGN KEY (product_category_id) REFERENCES Product_category(id)
 );
 
-CREATE TABLE Services (
-  id INT NOT NULL AUTO_INCREMENT,
-  seller_id INT NOT NULL,
-  service_name VARCHAR(100) NOT NULL,
-  service_description VARCHAR(1000) NOT NULL,
-  service_price DECIMAL(10,2) NOT NULL,
-  service_category_id INT NOT NULL,
-  PRIMARY KEY (id),
-  FOREIGN KEY (seller_id) REFERENCES Sellers(id),
-  FOREIGN KEY (service_category_id) REFERENCES Service_category(id)
-);
 
 CREATE TABLE Events (
   id INT NOT NULL AUTO_INCREMENT,
@@ -169,19 +186,14 @@ CREATE TABLE Events (
   FOREIGN KEY (buyer_id) REFERENCES Users(id)
 );
 
-CREATE TABLE Event_Products (
+CREATE TABLE Event_Items (
+  id INT NOT NULL AUTO_INCREMENT,
   event_id INT NOT NULL,
-  product_id INT NOT NULL,
+  item_id INT NOT NULL,
   quantity INT NOT NULL,
-  PRIMARY KEY (event_id, product_id),
+  PRIMARY KEY (id),
+  UNIQUE(event_id, item_id),
   FOREIGN KEY (event_id) REFERENCES Events(id),
-  FOREIGN KEY (product_id) REFERENCES Products(id)
+  FOREIGN KEY (item_id) REFERENCES Catalog_Item(id)
 );
 
-CREATE TABLE Event_Services (
-  event_id INT NOT NULL,
-  service_id INT NOT NULL,
-  PRIMARY KEY (event_id, service_id),
-  FOREIGN KEY (event_id) REFERENCES Events(id),
-  FOREIGN KEY (service_id) REFERENCES Services(id)
-);

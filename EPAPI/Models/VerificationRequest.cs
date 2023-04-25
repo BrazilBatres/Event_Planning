@@ -19,7 +19,7 @@ public partial class VerificationRequest
 
     public DateTime TransacDate { get; set; }
 
-    public virtual Administrator? Admin { get; set; }
+    public virtual User? Admin { get; set; }
 
     public virtual Seller Seller { get; set; } = null!;
 

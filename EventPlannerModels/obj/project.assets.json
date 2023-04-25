@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\UNIVERSIDAD\\2023 CICLO 1\\PROGRAMACIÓN WEB\\Event Planner (Proyecto)\\EventPlanning\\EventPlannerModels\\EventPlannerModels.csproj",
+      "projectUniqueName": "D:\\UNIVERSIDAD\\2023 CICLO 1\\PROGRAMACIÓN WEB\\Event Planner (Proyecto)\\Event_Planning\\EventPlannerModels\\EventPlannerModels.csproj",
       "projectName": "EventPlannerModels",
-      "projectPath": "D:\\UNIVERSIDAD\\2023 CICLO 1\\PROGRAMACIÓN WEB\\Event Planner (Proyecto)\\EventPlanning\\EventPlannerModels\\EventPlannerModels.csproj",
+      "projectPath": "D:\\UNIVERSIDAD\\2023 CICLO 1\\PROGRAMACIÓN WEB\\Event Planner (Proyecto)\\Event_Planning\\EventPlannerModels\\EventPlannerModels.csproj",
       "packagesPath": "C:\\Users\\brazi\\.nuget\\packages\\",
-      "outputPath": "D:\\UNIVERSIDAD\\2023 CICLO 1\\PROGRAMACIÓN WEB\\Event Planner (Proyecto)\\EventPlanning\\EventPlannerModels\\obj\\",
+      "outputPath": "D:\\UNIVERSIDAD\\2023 CICLO 1\\PROGRAMACIÓN WEB\\Event Planner (Proyecto)\\Event_Planning\\EventPlannerModels\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\brazi\\AppData\\Roaming\\NuGet\\NuGet.Config",

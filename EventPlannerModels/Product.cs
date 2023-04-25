@@ -19,7 +19,7 @@ public partial class Product
 
     public virtual ICollection<EventProduct> EventProducts { get; } = new List<EventProduct>();
 
-    public virtual ProductCategory? ProductCategory { get; set; }
+    public virtual ProductCategory ProductCategory { get; set; } = null!;
 
-    public virtual Seller? Seller { get; set; }
+    public virtual Seller Seller { get; set; } = null!;
 }

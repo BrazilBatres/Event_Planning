@@ -17,7 +17,7 @@ public partial class Seller
 
     public int? ExperienceYears { get; set; }
 
-    public sbyte Freelance { get; set; }
+    public bool Freelance { get; set; }
 
     public virtual IdentificationType IdentificationType { get; set; } = null!;
 

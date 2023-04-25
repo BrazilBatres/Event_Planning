@@ -15,8 +15,6 @@ public partial class EventPlanningContext : DbContext
     {
     }
 
-    public virtual DbSet<Administrator> Administrators { get; set; }
-
     public virtual DbSet<City> Cities { get; set; }
 
     public virtual DbSet<Country> Countries { get; set; }
@@ -27,11 +25,17 @@ public partial class EventPlanningContext : DbContext
 
     public virtual DbSet<IdentificationType> IdentificationTypes { get; set; }
 
+    public virtual DbSet<Permission> Permissions { get; set; }
+
     public virtual DbSet<Product> Products { get; set; }
 
     public virtual DbSet<ProductCategory> ProductCategories { get; set; }
 
     public virtual DbSet<Referral> Referrals { get; set; }
+
+    public virtual DbSet<Role> Roles { get; set; }
+
+    public virtual DbSet<RolePermission> RolePermissions { get; set; }
 
     public virtual DbSet<Seller> Sellers { get; set; }
 
@@ -45,6 +49,8 @@ public partial class EventPlanningContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserRole> UserRoles { get; set; }
+
     public virtual DbSet<VerificationRequest> VerificationRequests { get; set; }
 
     public virtual DbSet<VerificationStatus> VerificationStatuses { get; set; }
@@ -55,29 +61,6 @@ public partial class EventPlanningContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Administrator>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("administrators");
-
-            entity.HasIndex(e => e.UserId, "user_id");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.EndDate)
-                .HasColumnType("date")
-                .HasColumnName("end_date");
-            entity.Property(e => e.StartDate)
-                .HasColumnType("date")
-                .HasColumnName("start_date");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Administrators)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("administrators_ibfk_1");
-        });
-
         modelBuilder.Entity<City>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -197,6 +180,18 @@ public partial class EventPlanningContext : DbContext
                 .HasColumnName("name");
         });
 
+        modelBuilder.Entity<Permission>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("permissions");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.PermissionName)
+                .HasMaxLength(50)
+                .HasColumnName("permission_name");
+        });
+
         modelBuilder.Entity<Product>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -267,6 +262,41 @@ public partial class EventPlanningContext : DbContext
                 .HasForeignKey(d => d.SellerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("referrals_ibfk_1");
+        });
+
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("roles");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.RoleName)
+                .HasMaxLength(50)
+                .HasColumnName("role_name");
+        });
+
+        modelBuilder.Entity<RolePermission>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("role_permissions");
+
+            entity.HasIndex(e => e.PermissionId, "permission_id");
+
+            entity.HasIndex(e => e.RoleId, "role_id");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.PermissionId).HasColumnName("permission_id");
+            entity.Property(e => e.RoleId).HasColumnName("role_id");
+
+            entity.HasOne(d => d.Permission).WithMany(p => p.RolePermissions)
+                .HasForeignKey(d => d.PermissionId)
+                .HasConstraintName("role_permissions_ibfk_2");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.RolePermissions)
+                .HasForeignKey(d => d.RoleId)
+                .HasConstraintName("role_permissions_ibfk_1");
         });
 
         modelBuilder.Entity<Seller>(entity =>
@@ -397,7 +427,12 @@ public partial class EventPlanningContext : DbContext
 
             entity.ToTable("users");
 
+            entity.HasIndex(e => e.Email, "email").IsUnique();
+
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CompanyName)
+                .HasMaxLength(50)
+                .HasColumnName("company_name");
             entity.Property(e => e.ContactPhone)
                 .HasMaxLength(20)
                 .HasColumnName("contact_phone");
@@ -407,6 +442,7 @@ public partial class EventPlanningContext : DbContext
             entity.Property(e => e.FirstName)
                 .HasMaxLength(50)
                 .HasColumnName("first_name");
+            entity.Property(e => e.IsCompany).HasColumnName("is_company");
             entity.Property(e => e.LastName)
                 .HasMaxLength(50)
                 .HasColumnName("last_name");
@@ -415,6 +451,35 @@ public partial class EventPlanningContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("password");
             entity.Property(e => e.PhoneVisible).HasColumnName("phone_visible");
+        });
+
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("user_roles");
+
+            entity.HasIndex(e => e.RoleId, "role_id");
+
+            entity.HasIndex(e => e.UserId, "user_id");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.EndDate)
+                .HasColumnType("date")
+                .HasColumnName("end_date");
+            entity.Property(e => e.RoleId).HasColumnName("role_id");
+            entity.Property(e => e.StartDate)
+                .HasColumnType("date")
+                .HasColumnName("start_date");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.UserRoles)
+                .HasForeignKey(d => d.RoleId)
+                .HasConstraintName("user_roles_ibfk_2");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserRoles)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("user_roles_ibfk_1");
         });
 
         modelBuilder.Entity<VerificationRequest>(entity =>

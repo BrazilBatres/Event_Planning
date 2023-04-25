@@ -11,19 +11,25 @@ public partial class User
 
     public string LastName { get; set; } = null!;
 
-    public sbyte MailVisible { get; set; }
+    public string? CompanyName { get; set; }
 
-    public string? Email { get; set; }
+    public bool MailVisible { get; set; }
 
-    public sbyte PhoneVisible { get; set; }
+    public string Email { get; set; } = null!;
+
+    public bool PhoneVisible { get; set; }
 
     public string? ContactPhone { get; set; }
 
-    public string Password { get; set; } = null!;
+    public bool IsCompany { get; set; }
 
-    public virtual ICollection<Administrator> Administrators { get; } = new List<Administrator>();
+    public string Password { get; set; } = null!;
 
     public virtual ICollection<Event> Events { get; } = new List<Event>();
 
     public virtual ICollection<Seller> Sellers { get; } = new List<Seller>();
+
+    public virtual ICollection<UserRole> UserRoles { get; } = new List<UserRole>();
+
+    public virtual ICollection<VerificationRequest> VerificationRequests { get; } = new List<VerificationRequest>();
 }

@@ -19,7 +19,7 @@ public partial class Event
 
     public decimal EventBudget { get; set; }
 
-    public virtual Buyer Buyer { get; set; } = null!;
+    public virtual User Buyer { get; set; } = null!;
 
     public virtual ICollection<EventProduct> EventProducts { get; } = new List<EventProduct>();
 

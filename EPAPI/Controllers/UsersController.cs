@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EventPlannerModels;
 using EPAPI.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EPAPI.Controllers
 {
@@ -20,7 +22,35 @@ namespace EPAPI.Controllers
         {
             _context = new EventPlanningContext();
         }
-
+        //// POST: api/Users/Login
+        //[HttpPost]
+        //[Route("Login")]
+        //public async Task<ActionResult<GeneralResult>> Login(LoginUser loginUser)
+        //{
+        //    GeneralResult generalResult =
+        //        new GeneralResult() { Result = false };
+        //    try
+        //    {
+        //        if (await (from u in _context.Users
+        //             where u.Email == loginUser.Email && u.Password == loginUser.Password
+        //                   select 1).AnyAsync())
+        //        {
+        //            generalResult.Result = true;
+        //        }
+        //        else
+        //        {
+        //            generalResult.ErrorMessage = "Email o contraseña incorrectos";
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        generalResult.Result = false;
+        //        generalResult.ErrorMessage = ex.Message;
+        //        throw;
+        //    }
+        //    return generalResult;
+        //}
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         // GET: api/Users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventPlannerModels.User>>> GetUsers()
@@ -56,6 +86,7 @@ namespace EPAPI.Controllers
                                    FirstName = u.FirstName,
                                    LastName = u.LastName,
                                    Email = u.Email,
+                                   Password = ""
                                }).FirstAsync();
 
             if (user == null)
@@ -81,7 +112,10 @@ namespace EPAPI.Controllers
                     Id = id,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
+                    MailVisible = user.MailVisible,
                     Email = user.Email,
+                    PhoneVisible = user.PhoneVisible,
+                    ContactPhone = user.ContactPhone,
                     Password = password,
                 };
                 _context.Entry(context_user).State = EntityState.Modified;

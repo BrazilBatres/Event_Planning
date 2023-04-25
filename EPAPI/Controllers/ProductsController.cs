@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EventPlannerModels;
 using EPAPI.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EPAPI.Controllers
 {
@@ -20,6 +22,7 @@ namespace EPAPI.Controllers
         {
             _context = new EventPlanningContext();
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         // GET: api/Products/Sellers
         [HttpGet]
         [Route("Sellers")]

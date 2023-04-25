@@ -14,4 +14,6 @@ public partial class Administrator
     public DateTime? EndDate { get; set; }
 
     public virtual User User { get; set; } = null!;
+
+    public virtual ICollection<VerificationRequest> VerificationRequests { get; } = new List<VerificationRequest>();
 }

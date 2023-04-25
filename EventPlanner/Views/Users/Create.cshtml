@@ -1,0 +1,68 @@
+﻿@model EventPlannerModels.User
+
+@{
+    Layout = "Login_Register";
+    ViewData["Title"] = "Regístrate";
+}
+<h1>Sign Up</h1>
+
+<hr />
+<form asp-action="Create">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="input-group">
+        <div class="input-group-text">
+            <input asp-for="IsCompany" class="form-check-input mt-0" type="checkbox" value="" onchange="valueChanged()">
+        </div>
+        <span class="input-group-text">Cuenta de empresa</span>
+        <span asp-validation-for="IsCompany" class="text-danger"></span>
+    </div>
+    <div class="form-group" id="CompanyName">
+        <label asp-for="CompanyName" class="control-label"></label>
+        <input asp-for="CompanyName" class="form-control" required="required" id="CompanyNameInput" />
+        <span id="CompanyNameValidation" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="FirstName" class="control-label"></label>
+        <input asp-for="FirstName" class="form-control" />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="LastName" class="control-label"></label>
+        <input asp-for="LastName" class="form-control" />
+        <span asp-validation-for="LastName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Email" class="control-label"></label>
+        <input asp-for="Email" type="email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="form-group form-check">
+        <input asp-for="MailVisible" type="checkbox" class="form-check-input" />
+        <label asp-for="MailVisible" class="control-label">¿Quieres que tu email sea visible?</label>
+        <span asp-validation-for="MailVisible" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="ContactPhone" class="control-label"></label>
+        <input asp-for="ContactPhone" class="form-control" />
+        <span asp-validation-for="ContactPhone" class="text-danger"></span>
+    </div>
+    <div class="form-group form-check">
+        <input asp-for="PhoneVisible" class="form-check-input" />
+        <label asp-for="PhoneVisible" class="control-label">¿Quieres que tu número de teléfono sea visible?</label>
+        <span asp-validation-for="PhoneVisible" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Password" class="control-label"></label>
+        <input asp-for="Password" type="password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Create" class="btn btn-primary" onclick="Validate()" />
+    </div>
+</form>
+
+
+<div>
+    <p>¿Ya tienes una cuenta? <a asp-action="Login">Inicia Sesión</a></p>
+</div>
