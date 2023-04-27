@@ -17,19 +17,17 @@ public partial class Seller
 
     public int? ExperienceYears { get; set; }
 
-    public bool Freelance { get; set; }
+    public sbyte Freelance { get; set; }
+
+    public virtual ICollection<CatalogItem> CatalogItems { get; set; } = new List<CatalogItem>();
 
     public virtual IdentificationType IdentificationType { get; set; } = null!;
 
-    public virtual ICollection<Product> Products { get; } = new List<Product>();
+    public virtual ICollection<Referral> Referrals { get; set; } = new List<Referral>();
 
-    public virtual ICollection<Referral> Referrals { get; } = new List<Referral>();
-
-    public virtual ICollection<SellerSocialMedium> SellerSocialMedia { get; } = new List<SellerSocialMedium>();
-
-    public virtual ICollection<Service> Services { get; } = new List<Service>();
+    public virtual ICollection<SellerSocialMedium> SellerSocialMedia { get; set; } = new List<SellerSocialMedium>();
 
     public virtual User User { get; set; } = null!;
 
-    public virtual ICollection<VerificationRequest> VerificationRequests { get; } = new List<VerificationRequest>();
+    public virtual ICollection<VerificationRequest> VerificationRequests { get; set; } = new List<VerificationRequest>();
 }

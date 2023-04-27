@@ -25,11 +25,13 @@ public partial class User
 
     public string Password { get; set; } = null!;
 
-    public virtual ICollection<Event> Events { get; } = new List<Event>();
+    public int RoleId { get; set; }
 
-    public virtual ICollection<Seller> Sellers { get; } = new List<Seller>();
+    public virtual ICollection<Event> Events { get; set; } = new List<Event>();
 
-    public virtual ICollection<UserRole> UserRoles { get; } = new List<UserRole>();
+    public virtual Role Role { get; set; } = null!;
 
-    public virtual ICollection<VerificationRequest> VerificationRequests { get; } = new List<VerificationRequest>();
+    public virtual ICollection<Seller> Sellers { get; set; } = new List<Seller>();
+
+    public virtual ICollection<VerificationRequest> VerificationRequests { get; set; } = new List<VerificationRequest>();
 }

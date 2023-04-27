@@ -1,0 +1,58 @@
+﻿@model EventPlannerModels.VerificationRequest
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Solicitud de Verificación</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.AdminComments)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.AdminComments)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.TransacDate)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.TransacDate)
+        </dd>
+        <dt class = "col-sm-2">
+            Administrador Encargado de Revisión
+        </dt>
+        <dd class = "col-sm-10">
+            @if (Model.Admin != null)
+            {
+                @Model.Admin.FirstName  @Model.Admin.LastName
+            }
+        </dd>
+        <dt class = "col-sm-2">
+            Usuario solicitante
+        </dt>
+        <dd class = "col-sm-10">
+            @Model.Seller.User.FirstName @Model.Seller.User.LastName
+        </dd>
+        <dt class = "col-sm-2">
+            Status
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Status.Name)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Editar</a> |
+    <a asp-action="Index">Regresar</a> |
+    <a asp-controller="Referrals" asp-action="IndexByUser" asp-route-id="@Model?.SellerId">Consulta de referencias</a> |
+    <a asp-controller="Sellers" asp-action="DetailsAdm" asp-route-id="@Model?.SellerId">Consulta Datos de Vendedor</a> |
+</div>

@@ -21,7 +21,5 @@ public partial class Event
 
     public virtual User Buyer { get; set; } = null!;
 
-    public virtual ICollection<EventProduct> EventProducts { get; } = new List<EventProduct>();
-
-    public virtual ICollection<Service> Services { get; } = new List<Service>();
+    public virtual ICollection<EventItem> EventItems { get; set; } = new List<EventItem>();
 }

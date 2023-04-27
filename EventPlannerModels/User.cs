@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 
 namespace EventPlannerModels;
 
@@ -36,9 +37,13 @@ public partial class User
     [DisplayName("Contraseña")]
     public string Password { get; set; } = null!;
 
+    public int RoleId { get; set; }
+
     public virtual ICollection<Administrator> Administrators { get; } = new List<Administrator>();
 
     public virtual ICollection<Event> Events { get; } = new List<Event>();
 
-    public virtual ICollection<Seller> Sellers { get; } = new List<Seller>();
+    public virtual Role? Role { get; set; }
+
+    public virtual Seller? Sellers { get; set; }
 }

@@ -11,7 +11,7 @@ public partial class State
 
     public int CountryId { get; set; }
 
-    public virtual ICollection<City> Cities { get; } = new List<City>();
+    public virtual ICollection<City> Cities { get; set; } = new List<City>();
 
     public virtual Country Country { get; set; } = null!;
 }

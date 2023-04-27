@@ -7,6 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EventPlannerModels;
 using EPAPI.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using System.Security.Principal;
 
 namespace EPAPI.Controllers
 {
@@ -22,6 +26,7 @@ namespace EPAPI.Controllers
         }
 
         // GET: api/Sellers
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventPlannerModels.Seller>>> GetSellers()
         {
@@ -29,26 +34,29 @@ namespace EPAPI.Controllers
             {
                 return NotFound();
             }
+
             var sellers = await (from s in _context.Sellers
                                  join u in _context.Users on s.UserId equals u.Id
-                               select new EventPlannerModels.Seller
-                               {
-                                   Id = s.Id,
-                                   UserId = s.UserId,
-                                   CompanyName = s.CompanyName,
-                                   IdentificationTypeId = s.IdentificationTypeId,
-                                   IdentificationNumber = s.IdentificationNumber,
-                                   ExperienceYears = s.ExperienceYears,
-                                   Freelance = s.Freelance,
-                                   User = new EventPlannerModels.User() {
-                                       FirstName = u.FirstName,
-                                       LastName = u.LastName,
-                                   }
-                               }).ToListAsync();
+                                 select new EventPlannerModels.Seller
+                                 {
+                                     Id = s.Id,
+                                     UserId = s.UserId,
+                                     CompanyName = s.CompanyName,
+                                     IdentificationTypeId = s.IdentificationTypeId,
+                                     IdentificationNumber = s.IdentificationNumber,
+                                     ExperienceYears = s.ExperienceYears,
+                                     Freelance = s.Freelance,
+                                     User = new EventPlannerModels.User()
+                                     {
+                                         FirstName = u.FirstName,
+                                         LastName = u.LastName,
+                                     }
+                                 }).ToListAsync();
             return sellers;
         }
 
         // GET: api/Sellers/5
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("{id}")]
         public async Task<ActionResult<EventPlannerModels.Seller>> GetSeller(int id)
         {
@@ -58,6 +66,7 @@ namespace EPAPI.Controllers
             }
             var seller = await (from s in _context.Sellers
                                 join u in _context.Users on s.UserId equals u.Id
+                                where s.Id == id
                                 select new EventPlannerModels.Seller
                                 {
                                     Id = s.Id,
@@ -84,6 +93,7 @@ namespace EPAPI.Controllers
 
         // PUT: api/Sellers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("{id}")]
         public async Task<ActionResult<GeneralResult>> PutSeller(int id, EventPlannerModels.Seller seller)
         {
@@ -91,11 +101,12 @@ namespace EPAPI.Controllers
                 new GeneralResult() { Result = false };
             try
             {
-                
+                var identity = HttpContext.User.Identity as ClaimsIdentity;
+                string _userid = identity.Claims.First(u => u.Type == ClaimTypes.Sid).Value;
                 Models.Seller context_seller = new Models.Seller()
                 {
                     Id = id,
-                    UserId = seller.UserId,
+                    UserId = int.Parse(_userid),
                     CompanyName = seller.CompanyName,
                     IdentificationTypeId = seller.IdentificationTypeId,
                     IdentificationNumber = seller.IdentificationNumber,
@@ -119,6 +130,7 @@ namespace EPAPI.Controllers
 
         // POST: api/Sellers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         public async Task<ActionResult<GeneralResult>> PostSeller(EventPlannerModels.Seller seller)
         {
@@ -128,12 +140,14 @@ namespace EPAPI.Controllers
             {
                 if (_context.Sellers == null)
                 {
-                    return Problem("Entity set 'MoviesContext.Categories'  is null.");
+                    return Problem("Entity set 'EventPlanningContext.Sellers'  is null.");
                 }
+                var identity = HttpContext.User.Identity as ClaimsIdentity;
+                string _userid = identity.Claims.First(u => u.Type == ClaimTypes.Sid).Value;
                 Models.Seller context_seller = new Models.Seller()
                 {
                     Id = seller.Id,
-                    UserId = seller.UserId,
+                    UserId = int.Parse(_userid),
                     CompanyName = seller.CompanyName,
                     IdentificationTypeId = seller.IdentificationTypeId,
                     IdentificationNumber = seller.IdentificationNumber,
@@ -154,6 +168,7 @@ namespace EPAPI.Controllers
         }
 
         // DELETE: api/Sellers/5
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpDelete("{id}")]
         public async Task<ActionResult<GeneralResult>> DeleteSeller(int id)
         {
@@ -182,6 +197,23 @@ namespace EPAPI.Controllers
                 throw;
             }
             return generalResult;
+        }
+        // GET: api/Sellers/Exists
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet]
+        [Route("Exists")]
+        
+        public async Task<ActionResult<int?>> Exists()
+        {
+            if (_context.Sellers == null)
+            {
+                return NotFound();
+            }
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            string userid = identity.Claims.First(u => u.Type == ClaimTypes.Sid).Value;
+            return await (from s in _context.Sellers
+                          where s.UserId == int.Parse(userid)
+                          select s.Id).FirstOrDefaultAsync();
         }
     }
 }

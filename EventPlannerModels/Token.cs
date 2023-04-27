@@ -9,6 +9,8 @@ namespace EventPlannerModels
     public class Token
     {
         public string token { get; set; }
+
+        public int roleId { get; set; }
         public DateTime expirationTime { get; set; }
         public GeneralResult generalResult { get; set; }
     }

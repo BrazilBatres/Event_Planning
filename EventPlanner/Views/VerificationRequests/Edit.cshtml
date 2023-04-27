@@ -1,0 +1,64 @@
+﻿@model EventPlannerModels.VerificationRequest
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Editar</h1>
+
+<h4>Solicitud de ser Vendedor</h4>
+<p>Solo puedes editar la solicitud cuando está en status "Pendiente"</p>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="SellerId" />
+            <input type="hidden" asp-for="AdminId" />
+       
+        <div class="form-group">
+            <label asp-for="Seller" class="control-label">Solicitante</label>
+                <input asp-for="Seller" value="Disabled readonly input" class="form-control" value="@Model.Seller.User.FirstName @Model.Seller.User.LastName" disabled readonly />
+              
+            <span asp-validation-for="Seller" class="text-danger"></span>
+        </div>
+            <div class="form-group">
+                <label asp-for="Admin" class="control-label">Administrador Encargado de Revisión</label>
+                <input asp-for="Admin" class="form-control" value="@if (Model.Admin != null)
+                    {
+                        @Model.Admin.FirstName  @Model.Admin.LastName
+                    }" disabled readonly />
+                <span asp-validation-for="Admin" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AdminComments" class="control-label"></label>
+                <input asp-for="AdminComments" class="form-control" />
+                <span asp-validation-for="AdminComments" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StatusId" class="control-label">Status</label>
+                <select asp-for="StatusId" class="form-control" asp-items="ViewBag.StatusId"></select>
+                <span asp-validation-for="StatusId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TransacDate" class="control-label"></label>
+                <input asp-for="TransacDate" class="form-control" disabled readonly />
+                <span asp-validation-for="TransacDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Regresar a la lista</a>
+</div>
+

@@ -1,6 +1,8 @@
 ﻿using EventPlanner.Models;
+using EventPlannerModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace EventPlanner.Controllers
 {
@@ -18,8 +20,12 @@ namespace EventPlanner.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> Privacy()
         {
+            string token = User.Claims.First(s => s.Type == "token").Value;
+            string roleid = User.Claims.First(s => s.Type == ClaimTypes.Role).Value;
+            EventPlannerModels.Role role = await Functions.APIServices.RolesDetails(int.Parse(roleid),token);
+            ViewBag.Role = role.RoleName;
             return View();
         }
 

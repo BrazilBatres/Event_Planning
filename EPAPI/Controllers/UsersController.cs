@@ -9,6 +9,7 @@ using EventPlannerModels;
 using EPAPI.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using System.Threading.Tasks.Dataflow;
 
 namespace EPAPI.Controllers
 {
@@ -22,36 +23,9 @@ namespace EPAPI.Controllers
         {
             _context = new EventPlanningContext();
         }
-        //// POST: api/Users/Login
-        //[HttpPost]
-        //[Route("Login")]
-        //public async Task<ActionResult<GeneralResult>> Login(LoginUser loginUser)
-        //{
-        //    GeneralResult generalResult =
-        //        new GeneralResult() { Result = false };
-        //    try
-        //    {
-        //        if (await (from u in _context.Users
-        //             where u.Email == loginUser.Email && u.Password == loginUser.Password
-        //                   select 1).AnyAsync())
-        //        {
-        //            generalResult.Result = true;
-        //        }
-        //        else
-        //        {
-        //            generalResult.ErrorMessage = "Email o contraseña incorrectos";
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        generalResult.Result = false;
-        //        generalResult.ErrorMessage = ex.Message;
-        //        throw;
-        //    }
-        //    return generalResult;
-        //}
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
         // GET: api/Users
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = ("1"))]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventPlannerModels.User>>> GetUsers()
         {
@@ -60,17 +34,24 @@ namespace EPAPI.Controllers
               return NotFound();
           }
           var users = await (from u in _context.Users
+                             join r in _context.Roles on u.RoleId equals r.Id
                              select new EventPlannerModels.User
                              {
                                  Id = u.Id,
                                  FirstName = u.FirstName,
                                  LastName = u.LastName,
                                  Email = u.Email,
+                                 RoleId = u.RoleId,
+                                 Role = new EventPlannerModels.Role()
+                                 {
+                                     RoleName = r.RoleName
+                                 }
                              }).ToListAsync();
             return users;
         }
 
         // GET: api/Users/5
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("{id}")]
         public async Task<ActionResult<EventPlannerModels.User>> GetUser(int id)
         {
@@ -79,6 +60,7 @@ namespace EPAPI.Controllers
                 return NotFound();
             }
             var user = await (from u in _context.Users
+                              join r in _context.Roles on u.RoleId equals r.Id
                               where u.Id == id
                                select new EventPlannerModels.User
                                {
@@ -86,7 +68,12 @@ namespace EPAPI.Controllers
                                    FirstName = u.FirstName,
                                    LastName = u.LastName,
                                    Email = u.Email,
-                                   Password = ""
+                                   RoleId = u.RoleId,
+                                   Password = "",
+                                   Role = new EventPlannerModels.Role()
+                                   {
+                                       RoleName = r.RoleName
+                                   },
                                }).FirstAsync();
 
             if (user == null)
@@ -99,6 +86,7 @@ namespace EPAPI.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("{id}")]
         public async Task<ActionResult<GeneralResult>> PutUser(int id, EventPlannerModels.User user)
         {
@@ -117,6 +105,7 @@ namespace EPAPI.Controllers
                     PhoneVisible = user.PhoneVisible,
                     ContactPhone = user.ContactPhone,
                     Password = password,
+                    RoleId = user.RoleId,
                 };
                 _context.Entry(context_user).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
@@ -133,42 +122,10 @@ namespace EPAPI.Controllers
             return generalResult;
         }
 
-        // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<GeneralResult>> PostUser(EventPlannerModels.User user)
-        {
-            GeneralResult generalResult =
-                    new GeneralResult() { Result = false };
-            try
-            {
-                if (_context.Users == null)
-                {
-                    return Problem("Entity set 'MoviesContext.Categories'  is null.");
-                }
-                Models.User context_user = new Models.User()
-                {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Email = user.Email,
-                    Password = user.Password,
-                };
-                _context.Users.Add(context_user);
-                await _context.SaveChangesAsync();
-                generalResult.Result = true;
-            }
-            catch (Exception ex)
-            {
-                generalResult.Result = false;
-                generalResult.ErrorMessage = ex.Message;
-                throw;
-            }
-
-            return generalResult;
-        }
+        
 
         // DELETE: api/Users/5
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpDelete("{id}")]
         public async Task<ActionResult<GeneralResult>> DeleteUser(int id)
         {
@@ -197,11 +154,6 @@ namespace EPAPI.Controllers
                 throw;
             }
             return generalResult;
-        }
-
-        private bool UserExists(int id)
-        {
-            return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

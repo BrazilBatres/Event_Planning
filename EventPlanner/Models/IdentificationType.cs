@@ -9,5 +9,5 @@ public partial class IdentificationType
 
     public string Name { get; set; } = null!;
 
-    public virtual ICollection<Seller> Sellers { get; } = new List<Seller>();
+    public virtual ICollection<Seller> Sellers { get; set; } = new List<Seller>();
 }

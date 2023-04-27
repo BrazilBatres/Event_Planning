@@ -32,9 +32,15 @@ namespace EPAPI.Controllers
                            where u.Email == loginUser.Email && u.Password == loginUser.Password
                            select 1).AnyAsync())//Aquí verificar que la contraseña y usuarios sean correctos
                 {
-                    string applicationName = "EPAPI";
+                    int userid = await (from u in _context.Users
+                                        where u.Email == loginUser.Email && u.Password == loginUser.Password
+                                        select u.Id).FirstAsync();
+                    int roleid = await (from u in _context.Users
+                                        where u.Id == userid
+                                        select u.RoleId).FirstAsync();
                     tokenResult.expirationTime = DateTime.Now.AddMinutes(30);
-                    tokenResult.token = CustomTokenJWT(applicationName, tokenResult.expirationTime);
+                    tokenResult.roleId = roleid;
+                    tokenResult.token = CustomTokenJWT(userid, roleid, loginUser.Email, tokenResult.expirationTime);
                     tokenResult.generalResult = new GeneralResult()
                     {
                         Result = true
@@ -60,7 +66,57 @@ namespace EPAPI.Controllers
             }
             return tokenResult;
         }
-        private string CustomTokenJWT(string ApplicationName, DateTime token_expiration)
+
+        // POST: api/Login
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Route("Register")]
+        [HttpPost]
+        public async Task<ActionResult<Token>> PostUser(EventPlannerModels.User user)
+        {
+            Token tokenResult = new Token();
+            try
+            {
+                if (_context.Users == null)
+                {
+                    return Problem("Entity set 'MoviesContext.Categories'  is null.");
+                }
+                Models.User context_user = new Models.User()
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Password = user.Password,
+                    RoleId = 3
+                };
+                _context.Users.Add(context_user);
+                await _context.SaveChangesAsync();
+                int userid = await (from u in _context.Users
+                                    where u.Email == user.Email && u.Password == user.Password
+                                    select u.Id).FirstAsync();
+                int roleid = await (from u in _context.Users
+                                    where u.Id == userid
+                                    select u.RoleId).FirstAsync();
+                tokenResult.expirationTime = DateTime.Now.AddMinutes(30);
+                tokenResult.token = CustomTokenJWT(userid, roleid, user.Email, tokenResult.expirationTime);
+                tokenResult.generalResult = new GeneralResult()
+                {
+                    Result = true
+                };
+            }
+            catch (Exception ex)
+            {
+                tokenResult.generalResult = new GeneralResult()
+                {
+                    Result = false,
+                    ErrorMessage = ex.Message
+                };
+                throw;
+            }
+
+            return tokenResult;
+        }
+        private string CustomTokenJWT(int userid, int roleid, string Email, DateTime token_expiration)
         {
             var _symmetricSecurityKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(_config["JWT:SecretKey"])
@@ -73,8 +129,9 @@ namespace EPAPI.Controllers
             var _Header = new JwtHeader(_signingCredentials);
 
             var _Claims = new[] {
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.NameId, ApplicationName)
+                new Claim(ClaimTypes.Email, Email),
+                new Claim(ClaimTypes.Sid, userid.ToString()),
+                new Claim(ClaimTypes.Role, roleid.ToString())
             };
 
             var _Payload = new JwtPayload(

@@ -15,52 +15,94 @@ public partial class EventPlanningContext : DbContext
     {
     }
 
+    public virtual DbSet<CatalogItem> CatalogItems { get; set; }
+
     public virtual DbSet<City> Cities { get; set; }
 
     public virtual DbSet<Country> Countries { get; set; }
 
     public virtual DbSet<Event> Events { get; set; }
 
-    public virtual DbSet<EventProduct> EventProducts { get; set; }
+    public virtual DbSet<EventItem> EventItems { get; set; }
 
     public virtual DbSet<IdentificationType> IdentificationTypes { get; set; }
 
-    public virtual DbSet<Permission> Permissions { get; set; }
-
-    public virtual DbSet<Product> Products { get; set; }
-
-    public virtual DbSet<ProductCategory> ProductCategories { get; set; }
+    public virtual DbSet<ItemCategory> ItemCategories { get; set; }
 
     public virtual DbSet<Referral> Referrals { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
 
-    public virtual DbSet<RolePermission> RolePermissions { get; set; }
-
     public virtual DbSet<Seller> Sellers { get; set; }
 
     public virtual DbSet<SellerSocialMedium> SellerSocialMedia { get; set; }
 
-    public virtual DbSet<Service> Services { get; set; }
-
-    public virtual DbSet<ServiceCategory> ServiceCategories { get; set; }
-
     public virtual DbSet<State> States { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
-
-    public virtual DbSet<UserRole> UserRoles { get; set; }
 
     public virtual DbSet<VerificationRequest> VerificationRequests { get; set; }
 
     public virtual DbSet<VerificationStatus> VerificationStatuses { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySQL("server=localhost;userid=root;password=mysql_brazil2023;database=event_planning;TreatTinyAsBoolean=False");
+    {
+        if (!optionsBuilder.IsConfigured)
+
+        {
+
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+
+            .SetBasePath(Directory.GetCurrentDirectory())
+
+                        .AddJsonFile("appsettings.json")
+
+                        .Build();
+
+            var connectionString = configuration.GetConnectionString("EventPlannerDB");
+
+            optionsBuilder.UseMySQL(connectionString);
+
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CatalogItem>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("catalog_item");
+
+            entity.HasIndex(e => e.ItemCategoryId, "item_category_id");
+
+            entity.HasIndex(e => e.SellerId, "seller_id");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.IsService).HasColumnName("is_service");
+            entity.Property(e => e.ItemCategoryId).HasColumnName("item_category_id");
+            entity.Property(e => e.ItemDescription)
+                .HasMaxLength(1000)
+                .HasColumnName("item_description");
+            entity.Property(e => e.ItemName)
+                .HasMaxLength(100)
+                .HasColumnName("item_name");
+            entity.Property(e => e.ItemPrice)
+                .HasPrecision(10)
+                .HasColumnName("item_price");
+            entity.Property(e => e.SellerId).HasColumnName("seller_id");
+
+            entity.HasOne(d => d.ItemCategory).WithMany(p => p.CatalogItems)
+                .HasForeignKey(d => d.ItemCategoryId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("catalog_item_ibfk_2");
+
+            entity.HasOne(d => d.Seller).WithMany(p => p.CatalogItems)
+                .HasForeignKey(d => d.SellerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("catalog_item_ibfk_1");
+        });
+
         modelBuilder.Entity<City>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -123,49 +165,32 @@ public partial class EventPlanningContext : DbContext
                 .HasForeignKey(d => d.BuyerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("events_ibfk_1");
-
-            entity.HasMany(d => d.Services).WithMany(p => p.Events)
-                .UsingEntity<Dictionary<string, object>>(
-                    "EventService",
-                    r => r.HasOne<Service>().WithMany()
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("event_services_ibfk_2"),
-                    l => l.HasOne<Event>().WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("event_services_ibfk_1"),
-                    j =>
-                    {
-                        j.HasKey("EventId", "ServiceId").HasName("PRIMARY");
-                        j.ToTable("event_services");
-                        j.HasIndex(new[] { "ServiceId" }, "service_id");
-                        j.IndexerProperty<int>("EventId").HasColumnName("event_id");
-                        j.IndexerProperty<int>("ServiceId").HasColumnName("service_id");
-                    });
         });
 
-        modelBuilder.Entity<EventProduct>(entity =>
+        modelBuilder.Entity<EventItem>(entity =>
         {
-            entity.HasKey(e => new { e.EventId, e.ProductId }).HasName("PRIMARY");
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("event_products");
+            entity.ToTable("event_items");
 
-            entity.HasIndex(e => e.ProductId, "product_id");
+            entity.HasIndex(e => new { e.EventId, e.ItemId }, "event_id").IsUnique();
 
+            entity.HasIndex(e => e.ItemId, "item_id");
+
+            entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.EventId).HasColumnName("event_id");
-            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.ItemId).HasColumnName("item_id");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
 
-            entity.HasOne(d => d.Event).WithMany(p => p.EventProducts)
+            entity.HasOne(d => d.Event).WithMany(p => p.EventItems)
                 .HasForeignKey(d => d.EventId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("event_products_ibfk_1");
+                .HasConstraintName("event_items_ibfk_1");
 
-            entity.HasOne(d => d.Product).WithMany(p => p.EventProducts)
-                .HasForeignKey(d => d.ProductId)
+            entity.HasOne(d => d.Item).WithMany(p => p.EventItems)
+                .HasForeignKey(d => d.ItemId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("event_products_ibfk_2");
+                .HasConstraintName("event_items_ibfk_2");
         });
 
         modelBuilder.Entity<IdentificationType>(entity =>
@@ -180,57 +205,11 @@ public partial class EventPlanningContext : DbContext
                 .HasColumnName("name");
         });
 
-        modelBuilder.Entity<Permission>(entity =>
+        modelBuilder.Entity<ItemCategory>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("permissions");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.PermissionName)
-                .HasMaxLength(50)
-                .HasColumnName("permission_name");
-        });
-
-        modelBuilder.Entity<Product>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("products");
-
-            entity.HasIndex(e => e.ProductCategoryId, "product_category_id");
-
-            entity.HasIndex(e => e.SellerId, "seller_id");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.ProductCategoryId).HasColumnName("product_category_id");
-            entity.Property(e => e.ProductDescription)
-                .HasMaxLength(1000)
-                .HasColumnName("product_description");
-            entity.Property(e => e.ProductName)
-                .HasMaxLength(100)
-                .HasColumnName("product_name");
-            entity.Property(e => e.ProductPrice)
-                .HasPrecision(10)
-                .HasColumnName("product_price");
-            entity.Property(e => e.SellerId).HasColumnName("seller_id");
-
-            entity.HasOne(d => d.ProductCategory).WithMany(p => p.Products)
-                .HasForeignKey(d => d.ProductCategoryId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("products_ibfk_2");
-
-            entity.HasOne(d => d.Seller).WithMany(p => p.Products)
-                .HasForeignKey(d => d.SellerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("products_ibfk_1");
-        });
-
-        modelBuilder.Entity<ProductCategory>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("product_category");
+            entity.ToTable("item_category");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Category)
@@ -274,29 +253,6 @@ public partial class EventPlanningContext : DbContext
             entity.Property(e => e.RoleName)
                 .HasMaxLength(50)
                 .HasColumnName("role_name");
-        });
-
-        modelBuilder.Entity<RolePermission>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("role_permissions");
-
-            entity.HasIndex(e => e.PermissionId, "permission_id");
-
-            entity.HasIndex(e => e.RoleId, "role_id");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.PermissionId).HasColumnName("permission_id");
-            entity.Property(e => e.RoleId).HasColumnName("role_id");
-
-            entity.HasOne(d => d.Permission).WithMany(p => p.RolePermissions)
-                .HasForeignKey(d => d.PermissionId)
-                .HasConstraintName("role_permissions_ibfk_2");
-
-            entity.HasOne(d => d.Role).WithMany(p => p.RolePermissions)
-                .HasForeignKey(d => d.RoleId)
-                .HasConstraintName("role_permissions_ibfk_1");
         });
 
         modelBuilder.Entity<Seller>(entity =>
@@ -355,52 +311,6 @@ public partial class EventPlanningContext : DbContext
                 .HasConstraintName("seller_social_media_ibfk_1");
         });
 
-        modelBuilder.Entity<Service>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("services");
-
-            entity.HasIndex(e => e.SellerId, "seller_id");
-
-            entity.HasIndex(e => e.ServiceCategoryId, "service_category_id");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.SellerId).HasColumnName("seller_id");
-            entity.Property(e => e.ServiceCategoryId).HasColumnName("service_category_id");
-            entity.Property(e => e.ServiceDescription)
-                .HasMaxLength(1000)
-                .HasColumnName("service_description");
-            entity.Property(e => e.ServiceName)
-                .HasMaxLength(100)
-                .HasColumnName("service_name");
-            entity.Property(e => e.ServicePrice)
-                .HasPrecision(10)
-                .HasColumnName("service_price");
-
-            entity.HasOne(d => d.Seller).WithMany(p => p.Services)
-                .HasForeignKey(d => d.SellerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("services_ibfk_1");
-
-            entity.HasOne(d => d.ServiceCategory).WithMany(p => p.Services)
-                .HasForeignKey(d => d.ServiceCategoryId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("services_ibfk_2");
-        });
-
-        modelBuilder.Entity<ServiceCategory>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("service_category");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Category)
-                .HasMaxLength(50)
-                .HasColumnName("category");
-        });
-
         modelBuilder.Entity<State>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
@@ -429,6 +339,8 @@ public partial class EventPlanningContext : DbContext
 
             entity.HasIndex(e => e.Email, "email").IsUnique();
 
+            entity.HasIndex(e => e.RoleId, "role_id");
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CompanyName)
                 .HasMaxLength(50)
@@ -451,35 +363,12 @@ public partial class EventPlanningContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("password");
             entity.Property(e => e.PhoneVisible).HasColumnName("phone_visible");
-        });
-
-        modelBuilder.Entity<UserRole>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("user_roles");
-
-            entity.HasIndex(e => e.RoleId, "role_id");
-
-            entity.HasIndex(e => e.UserId, "user_id");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.EndDate)
-                .HasColumnType("date")
-                .HasColumnName("end_date");
             entity.Property(e => e.RoleId).HasColumnName("role_id");
-            entity.Property(e => e.StartDate)
-                .HasColumnType("date")
-                .HasColumnName("start_date");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
 
-            entity.HasOne(d => d.Role).WithMany(p => p.UserRoles)
+            entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)
-                .HasConstraintName("user_roles_ibfk_2");
-
-            entity.HasOne(d => d.User).WithMany(p => p.UserRoles)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("user_roles_ibfk_1");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("users_ibfk_1");
         });
 
         modelBuilder.Entity<VerificationRequest>(entity =>

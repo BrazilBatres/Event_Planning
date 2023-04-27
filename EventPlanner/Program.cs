@@ -28,6 +28,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                    options.Cookie.SameSite = SameSiteMode.None;
                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                    options.LoginPath = "/Login"; /*this option indicates where is the login page*/
+                   options.AccessDeniedPath = "/Home/Privacy";
                });
 #endregion
 

@@ -9,5 +9,5 @@ public partial class VerificationStatus
 
     public string Name { get; set; } = null!;
 
-    public virtual ICollection<VerificationRequest> VerificationRequests { get; } = new List<VerificationRequest>();
+    public virtual ICollection<VerificationRequest> VerificationRequests { get; set; } = new List<VerificationRequest>();
 }

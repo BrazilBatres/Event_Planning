@@ -1,0 +1,23 @@
+﻿@model EventPlannerModels.ItemCategory
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Categoría</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Category)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Category)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Editar</a> |
+    <a asp-action="Index">Regresar</a>
+</div>
